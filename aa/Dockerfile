@@ -1,49 +1,13 @@
-FROM composer:2.7 AS vendor
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+COPY package*.json ./
 
-RUN composer install \
-    --no-dev \
-    --no-scripts \
-    --no-interaction \
-    --prefer-dist
+RUN npm install
 
 COPY . .
-RUN composer dump-autoload --optimize
 
-FROM php:8.3-fpm-alpine
+EXPOSE 3000
 
-RUN apk add --no-cache \
-    nginx \
-    bash \
-    curl \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    zip \
-    unzip
-
-RUN docker-php-ext-install \
-    pdo \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd
-
-COPY --from=vendor /app /var/www/html
-
-WORKDIR /var/www/html
-
-RUN chown -R www-data:www-data storage bootstrap/cache
-
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 8080
-
-CMD sh -c "php-fpm -D && nginx -g 'daemon off;'"
+CMD ["npm", "run", "dev"]
