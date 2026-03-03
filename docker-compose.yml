@@ -1,0 +1,45 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+    container_name: invoice-backend
+    ports:
+      - "8000:8080"
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - db
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: invoice-frontend
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./frontend:/app
+  #   depends_on:
+  #     - backend
+  frontend:
+    build:
+      context: ./frontend
+    container_name: invoice-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8
+    container_name: invoice-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: invoice
+    ports:
+      - "3306:3306"
