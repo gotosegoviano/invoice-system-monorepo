@@ -7,29 +7,45 @@ use PHPUnit\Framework\TestCase;
 
 class ServiceCalculationStrategyTest extends TestCase
 {
-    public function test_service_applies_discount_before_tax(): void
+    #[Test]
+    public function test_single_item(): void
     {
         $strategy = new ServiceCalculationStrategy();
-
-        $items = [
-            [
-                'quantity' => 2,
-                'price' => 100,
-                'discount' => 20,
-                'tax_rate' => 10,
-            ],
-        ];
-
+        $items = [['quantity' => 2, 'price' => 100, 'discount' => 20, 'tax_rate' => 10]];
         $result = $strategy->calculate($items);
 
-        // base = 200
-        // discounted = 180
-        // tax = 18
-        // total = 198
+        $this->assertEquals(200, $result['subtotal']);
+        $this->assertEquals(20, $result['discount_total']);
+        $this->assertEquals(18, $result['tax_total']);
+        $this->assertEquals(198, $result['total']);
+    }
 
-        $this->assertEquals(200.00, $result['subtotal']);
-        $this->assertEquals(20.00, $result['discount_total']);
-        $this->assertEquals(18.00, $result['tax_total']);
-        $this->assertEquals(198.00, $result['total']);
+    #[Test]
+    public function test_multiple_items(): void
+    {
+        $strategy = new ServiceCalculationStrategy();
+        $items = [
+            ['quantity' => 2, 'price' => 100, 'discount' => 10, 'tax_rate' => 10],
+            ['quantity' => 1, 'price' => 50, 'discount' => 5, 'tax_rate' => 10]
+        ];
+        $result = $strategy->calculate($items);
+
+        $this->assertEquals(250, $result['subtotal']);
+        $this->assertEquals(15, $result['discount_total']);
+        $this->assertEquals(23.5, $result['tax_total']);
+        $this->assertEquals(258.5, $result['total']);
+    }
+
+    #[Test]
+    public function test_zero_discount_and_tax(): void
+    {
+        $strategy = new ServiceCalculationStrategy();
+        $items = [['quantity' => 1, 'price' => 100, 'discount' => 0, 'tax_rate' => 0]];
+        $result = $strategy->calculate($items);
+
+        $this->assertEquals(100, $result['subtotal']);
+        $this->assertEquals(0, $result['discount_total']);
+        $this->assertEquals(0, $result['tax_total']);
+        $this->assertEquals(100, $result['total']);
     }
 }

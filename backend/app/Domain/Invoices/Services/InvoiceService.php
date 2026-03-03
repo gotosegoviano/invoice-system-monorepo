@@ -2,40 +2,95 @@
 
 namespace App\Domain\Invoices\Services;
 
+use App\Domain\Invoices\Services\InvoicePdfService;
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Domain\Invoices\Strategies\CalculationStrategy;
 use App\Domain\Invoices\Strategies\ProductCalculationStrategy;
 use App\Domain\Invoices\Strategies\ServiceCalculationStrategy;
+use App\Models\Company;
+use App\Models\Customer;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class InvoiceService
 {
-    /**
-     * Calculates the invoice totals based on the provided type and items.
-     * Each item should have 'quantity', 'price', 'discount' (optional), and 'tax_rate'.
-     * @param InvoiceType $type The type of invoice (product or service).
-     * @param array $items An array of items, each containing 'quantity', 'price', 'discount' (optional), and 'tax_rate'.
-     * @return array An array containing 'subtotal', 'discount_total', 'tax_total', and 'total'.
-     * @throws InvalidArgumentException If the items array is empty or has an invalid structure.
-     */
-    public function calculate(InvoiceType $type, array $items): array
+    protected InvoicePdfService $pdf_service;
+
+    public function __construct(InvoicePdfService $pdf_service)
     {
+        $this->pdf_service = $pdf_service;
+    }
+
+    public function create(array $data): array
+    {
+        $items = $data['items'] ?? [];
+
         if (empty($items)) {
             throw new InvalidArgumentException('Invoice must contain at least one item.');
         }
 
         $this->validateItemsStructure($items);
 
-        $strategy = $this->resolveStrategy($type);
+        // Check if all items are of the same type
+        $types = array_unique(array_column($items, 'type'));
+        if (count($types) > 1) {
+            throw new InvalidArgumentException('Cannot mix product and service items.');
+        }
 
+        // It doesn't matter if the company and customer already exist, we will just create new ones for simplicity. In a real application, you would likely want to check for existing records and reuse them.
+        $company = Company::create($data['company']);
+        $customer = Customer::create($data['customer']);
+
+        $type = InvoiceType::from($types[0]);
+
+        // Calculate totals using the appropriate strategy
+        $totals = $this->calculate($type, $items);
+
+        return DB::transaction(function () use ($data, $items, $totals, $company, $customer, $type) {
+
+            $invoice = Invoice::create([
+                'uuid' => Str::uuid(),
+                'type' => $type->value,
+                'invoice_date' => $data['invoice_date'] ?? now(),
+                'due_date' => $data['due_date'],
+                'company_id' => $company->id,
+                'customer_id' => $customer->id,
+                'comments' => $data['comments'] ?? null,
+                'subtotal' => $totals['subtotal'],
+                'discount_total' => $totals['discount_total'],
+                'tax_total' => $totals['tax_total'],
+                'total' => $totals['total'],
+            ]);
+
+            foreach ($items as $item) {
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'description' => $item['description'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'discount' => $item['discount'] ?? 0,
+                    'tax_rate' => $item['tax_rate'],
+                ]);
+            }
+
+            $pdf_url = $this->pdf_service->generate($invoice);
+
+            return [
+                'invoice' => $invoice,
+                'pdf_url' => $pdf_url,
+            ];
+        });
+    }
+
+    public function calculate(InvoiceType $type, array $items): array
+    {
+        $strategy = $this->resolveStrategy($type);
         return $strategy->calculate($items);
     }
 
-    /**
-     * Resolves the appropriate calculation strategy based on the invoice type.
-     * @param InvoiceType $type The type of invoice (product or service).
-     * @return CalculationStrategy The corresponding calculation strategy instance.
-     */
     private function resolveStrategy(InvoiceType $type): CalculationStrategy
     {
         return match ($type) {
@@ -44,20 +99,10 @@ class InvoiceService
         };
     }
 
-    /**
-     * Validates the structure of the items array to ensure it contains the required fields.
-     * Each item must have 'quantity', 'price', and 'tax_rate'.
-     * @param array $items The array of items to validate.
-     * @throws InvalidArgumentException If any item is missing required fields.
-     */
     private function validateItemsStructure(array $items): void
     {
         foreach ($items as $item) {
-            if (
-                !isset($item['quantity']) ||
-                !isset($item['price']) ||
-                !isset($item['tax_rate'])
-            ) {
+            if (!isset($item['quantity'], $item['price'], $item['tax_rate'], $item['type'])) {
                 throw new InvalidArgumentException('Invalid item structure.');
             }
         }

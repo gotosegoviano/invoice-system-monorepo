@@ -14,30 +14,30 @@ class ServiceCalculationStrategy implements CalculationStrategy
     public function calculate(array $items): array
     {
         $subtotal = 0;
-        $discountTotal = 0;
-        $taxTotal = 0;
+        $discount_total = 0;
+        $tax_total = 0;
 
         foreach ($items as $item) {
             $quantity = (float) $item['quantity'];
             $price = (float) $item['price'];
             $discount = (float) ($item['discount'] ?? 0);
-            $taxRate = (float) $item['tax_rate'];
+            $tax_rate = (float) $item['tax_rate'];
 
             $base = $quantity * $price;
             $discounted = $base - $discount;
-            $tax = $discounted * ($taxRate / 100);
+            $tax = $discounted * ($tax_rate / 100);
 
             $subtotal += $base;
-            $discountTotal += $discount;
-            $taxTotal += $tax;
+            $discount_total += $discount;
+            $tax_total += $tax;
         }
 
-        $total = ($subtotal - $discountTotal) + $taxTotal;
+        $total = ($subtotal - $discount_total) + $tax_total;
 
         return [
             'subtotal' => round($subtotal, 2),
-            'discount_total' => round($discountTotal, 2),
-            'tax_total' => round($taxTotal, 2),
+            'discount_total' => round($discount_total, 2),
+            'tax_total' => round($tax_total, 2),
             'total' => round($total, 2),
         ];
     }

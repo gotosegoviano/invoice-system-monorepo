@@ -1,38 +1,126 @@
 <?php
 
-namespace Tests\Unit\Domain\Invoice;
+namespace Tests\Unit\Domain\Invoices\Services;
 
+use Tests\TestCase;
+use Mockery;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Domain\Invoices\Services\InvoiceService;
+use App\Domain\Invoice\Services\InvoicePdfService;
 use App\Domain\Invoices\Enums\InvoiceType;
-use PHPUnit\Framework\TestCase;
-use InvalidArgumentException;
+use App\Models\Invoice;
 
 class InvoiceServiceTest extends TestCase
 {
-    public function test_it_calculates_service_invoice(): void
+    use RefreshDatabase;
+
+    protected InvoicePdfService $pdfMock;
+    protected InvoiceService $service;
+
+    protected function setUp(): void
     {
-        $service = new InvoiceService();
+        parent::setUp();
 
-        $items = [
-            [
-                'quantity' => 1,
-                'price' => 100,
-                'discount' => 10,
-                'tax_rate' => 10,
-            ],
-        ];
-
-        $result = $service->calculate(InvoiceType::SERVICE, $items);
-
-        $this->assertEquals(99.00, $result['total']);
+        $this->pdfMock = Mockery::mock(InvoicePdfService::class);
+        $this->service = new InvoiceService($this->pdfMock);
     }
 
-    public function test_it_throws_exception_when_no_items(): void
+    #[Test]
+    public function it_creates_invoice_successfully_for_service_type()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $data = [
+            'company' => [
+                'name' => 'ACME Inc',
+                'email' => 'acme@test.com'
+            ],
+            'customer' => [
+                'name' => 'John Doe',
+                'email' => 'john@test.com'
+            ],
+            'due_date' => now()->addDays(7),
+            'items' => [
+                [
+                    'description' => 'Consulting',
+                    'quantity' => 2,
+                    'price' => 100,
+                    'discount' => 10,
+                    'tax_rate' => 10,
+                    'type' => 'service'
+                ]
+            ]
+        ];
 
-        $service = new InvoiceService();
+        $this->pdfMock
+            ->shouldReceive('generate')
+            ->once()
+            ->andReturn('/storage/invoices/test.pdf');
 
-        $service->calculate(InvoiceType::SERVICE, []);
+        $result = $this->service->create($data);
+
+        $this->assertDatabaseCount('companies', 1);
+        $this->assertDatabaseCount('customers', 1);
+        $this->assertDatabaseCount('invoices', 1);
+        $this->assertDatabaseCount('invoice_items', 1);
+
+        $this->assertEquals('/storage/invoices/test.pdf', $result['pdf_url']);
+        $this->assertInstanceOf(Invoice::class, $result['invoice']);
+    }
+
+    #[Test]
+    public function it_throws_exception_if_items_are_empty()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->service->create([
+            'company' => ['name' => 'A', 'email' => 'a@test.com'],
+            'customer' => ['name' => 'B', 'email' => 'b@test.com'],
+            'items' => []
+        ]);
+    }
+
+    #[Test]
+    public function it_throws_exception_if_item_structure_is_invalid()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->service->create([
+            'company' => ['name' => 'A', 'email' => 'a@test.com'],
+            'customer' => ['name' => 'B', 'email' => 'b@test.com'],
+            'items' => [
+                [
+                    'quantity' => 1,
+                    'price' => 100,
+                    // tax_rate missing
+                    'type' => 'service'
+                ]
+            ]
+        ]);
+    }
+
+    #[Test]
+    public function it_throws_exception_when_mixing_item_types()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->service->create([
+            'company' => ['name' => 'A', 'email' => 'a@test.com'],
+            'customer' => ['name' => 'B', 'email' => 'b@test.com'],
+            'items' => [
+                [
+                    'description' => 'Item 1',
+                    'quantity' => 1,
+                    'price' => 100,
+                    'tax_rate' => 10,
+                    'type' => 'service'
+                ],
+                [
+                    'description' => 'Item 2',
+                    'quantity' => 1,
+                    'price' => 100,
+                    'tax_rate' => 10,
+                    'type' => 'product'
+                ]
+            ]
+        ]);
     }
 }
