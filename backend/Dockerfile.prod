@@ -24,8 +24,8 @@ WORKDIR /var/www/html
 RUN chmod -R 775 storage bootstrap/cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx.conf.prod /etc/nginx/nginx.conf
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
+CMD sh -c "sed -i 's/\${PORT}/'$PORT'/g' /etc/nginx/nginx.conf && php-fpm & nginx -g 'daemon off;'"
