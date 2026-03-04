@@ -149,6 +149,7 @@ async function createInvoice() {
     formData.append('discount_total', String(discountAmount.value))
     formData.append('total', String(total.value))
     formData.append('type', invoice.value.type)
+    formData.append('comments', invoice.value.notes ?? '')
 
     // --- Fetch al backend ---
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices`, {
