@@ -252,12 +252,14 @@
                 </tr>
                 <tr>
                     <td class="label">Tax</td>
-                    <td class="text-right">${{ number_format($invoice->tax, 2) }}</td>
+                    <td class="text-right">
+                        {{ $invoice->tax_type == '$' ? '$' : '' }}{{ number_format($invoice->tax_total, 2) }}{{ $invoice->tax_type == '%' ? '%' : '' }}
+                    </td>
                 </tr>
                 <tr>
                     <td class="label">Discount</td>
                     <td class="text-right">
-                        ${{ number_format($invoice->discount ?? 0, 2) }}
+                        {{ $invoice->discount_type == '$' ? '$' : '' }}{{ number_format($invoice->discount_total ?? 0, 2) }}{{ $invoice->discount_type == '%' ? '%' : '' }}
                     </td>
                 </tr>
                 <tr>

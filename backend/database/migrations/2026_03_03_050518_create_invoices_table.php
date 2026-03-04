@@ -26,7 +26,11 @@ return new class extends Migration {
             $table->date('due_date');
             $table->decimal('subtotal', 12, 2);
             $table->decimal('discount_total', 12, 2);
+            $table->string('discount_type', 2)->default('%');
+            ;
             $table->decimal('tax_total', 5, 2);
+            $table->string('tax_type', 2)->default('%');
+            ;
             $table->decimal('total', 12, 2);
             $table->string('comments')->nullable();
             $table->string('pdf_path')->nullable();

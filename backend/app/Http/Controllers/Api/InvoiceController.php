@@ -27,7 +27,7 @@ class InvoiceController extends Controller
             'customer.name' => 'required|string',
             'customer.email' => 'nullable|email',
             'customer.address' => 'nullable|string',
-            'customer.city' => 'required|string',
+            'customer.city' => 'nullable|string',
             'customer.state' => 'nullable|string',
             'customer.zip' => 'nullable|string',
             'customer.country' => 'nullable|string',
@@ -42,7 +42,9 @@ class InvoiceController extends Controller
             'items.*.price' => 'required|numeric|min:0',
             'type' => 'required|in:service,product',
             'tax_total' => 'required|numeric|min:0',
+            'tax_type' => 'required|string',
             'discount_total' => 'required|numeric|min:0',
+            'discount_type' => 'required|string',
             'total' => 'required|numeric|min:0',
         ]);
 

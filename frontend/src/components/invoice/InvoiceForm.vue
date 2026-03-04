@@ -67,13 +67,30 @@ function dataURLtoBlob(dataurl: string) {
 
 const total = computed(() => {
   let value = subtotal.value
+  const type = invoice.value.type 
 
-  if (taxAmount.value) {
-    value += taxType.value === '%' ? subtotal.value * (taxAmount.value / 100) : taxAmount.value
+  const calcTax = (base: number) => {
+    return taxType.value === '%' ? base * (taxAmount.value / 100) : taxAmount.value
   }
 
-  if (discountAmount.value) {
-    value -= discountType.value === '%' ? subtotal.value * (discountAmount.value / 100) : discountAmount.value
+  const calcDiscount = (base: number) => {
+    return discountType.value === '%' ? base * (discountAmount.value / 100) : discountAmount.value
+  }
+
+  if (type === 'service') {
+    if (discountAmount.value) {
+      value -= calcDiscount(value)
+    }
+    if (taxAmount.value) {
+      value += calcTax(value)
+    }
+  } else if (type === 'product') {
+    if (taxAmount.value) {
+      value += calcTax(value)
+    }
+    if (discountAmount.value) {
+      value -= calcDiscount(value)
+    }
   }
 
   return value
@@ -150,6 +167,8 @@ async function createInvoice() {
     formData.append('total', String(total.value))
     formData.append('type', invoice.value.type)
     formData.append('comments', invoice.value.notes ?? '')
+    formData.append('tax_type', taxType.value ?? '')
+    formData.append('discount_type', discountType.value ?? '')
 
     // --- Fetch al backend ---
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices`, {
@@ -326,6 +345,8 @@ async function createInvoice() {
           :total="total"
           v-model:taxAmount="taxAmount"
           v-model:discountAmount="discountAmount"
+          @update:taxType="val => taxType = val"
+          @update:discountType="val => discountType = val"
         />
 
       </div>

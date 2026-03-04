@@ -57,6 +57,8 @@ class InvoiceService
                 'discount_total' => $totals['discount_total'],
                 'tax_total' => $totals['tax_total'],
                 'total' => $totals['total'],
+                'discount_type' => $data['discount_type'] ?? '%',
+                'tax_type' => $data['tax_type'] ?? '%',
             ]);
 
             foreach ($items as $item) {
@@ -82,7 +84,13 @@ class InvoiceService
     public function calculate(array $data, array $items): array
     {
         $strategy = $this->resolveStrategy(InvoiceType::from($data['type']));
-        return $strategy->calculate($items, $data['tax_total'] ?? 0, $data['discount'] ?? 0);
+        return $strategy->calculate(
+            $items,
+            tax_total: $data['tax_total'],
+            discount: $data['discount_total'],
+            tax_is_percentage: $data['tax_type'] === '%',
+            discount_is_percentage: $data['discount_type'] === '%'
+        );
     }
 
     private function resolveStrategy(InvoiceType $type): CalculationStrategy

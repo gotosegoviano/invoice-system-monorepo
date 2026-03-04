@@ -11,6 +11,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:taxAmount', value: number): void
   (e: 'update:discountAmount', value: number): void
+  (e: 'update:taxType', value: '$' | '%'): void
+  (e: 'update:discountType', value: '$' | '%'): void
 }>()
 
 // Local reactive refs
@@ -38,7 +40,7 @@ watch(() => props.discountAmount, val => localDiscount.value = val)
       <div class="relative w-28 flex items-center">
         <button 
           v-if="taxType === '$'" 
-          @click="taxType = '%'" 
+          @click="() => { taxType = '%'; emit('update:taxType', '%') }"
           class="absolute left-0 pl-2 text-gray-700 cursor-pointer font-semibold"
         >
           $
@@ -54,7 +56,7 @@ watch(() => props.discountAmount, val => localDiscount.value = val)
 
         <button
           v-if="taxType === '%'" 
-          @click="taxType = '$'" 
+          @click="() => { taxType = '$'; emit('update:taxType', '$') }"
           class="absolute right-0 text-gray-700 cursor-pointer font-semibold"
         >
           %
@@ -68,7 +70,7 @@ watch(() => props.discountAmount, val => localDiscount.value = val)
       <div class="relative w-28 flex items-center">
         <button
           v-if="discountType === '$'"
-          @click="discountType = '%'"
+          @click="() => { discountType = '%'; emit('update:discountType', '%') }"
           class="absolute left-0 pl-2 text-gray-700 cursor-pointer font-semibold"
         >$</button>
 
@@ -82,7 +84,7 @@ watch(() => props.discountAmount, val => localDiscount.value = val)
 
         <button
           v-if="discountType === '%'"
-          @click="discountType = '$'"
+          @click="() => { discountType = '$'; emit('update:discountType', '$') }"
           class="absolute right-0 text-gray-700 cursor-pointer font-semibold"
         >%</button>
       </div>
