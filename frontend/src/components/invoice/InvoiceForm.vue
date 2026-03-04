@@ -19,7 +19,7 @@ const { invoice, addItem, removeItem, subtotal } = useInvoice()
 
 // Ref for the hidden file input
 const fileInput = ref<HTMLInputElement>()
-console.log('API URL:', import.meta.env.VITE_API_URL)
+
 // Drag & drop + file select handlers
 function onFileChange(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0]
