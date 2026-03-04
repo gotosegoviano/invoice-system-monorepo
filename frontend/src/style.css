@@ -2,24 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* .input-clean {
-  @apply border-none outline-none bg-transparent px-2 py-1;
+body {
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
 }
 
-.input-clean:hover,
-.input-clean:focus {
-  @apply border border-dashed border-gray-400;
+.invoice-page {
+  background-color: white;
+  width: 800px;         
+  max-width: 90vw;      
+  padding: 2rem;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  font-size: 0.9rem;    
+  line-height: 1.4;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.invoice-page input.input-clean,
+.invoice-page textarea {
+  font-size: 0.875rem; /* 14px */
+  padding: 0.25rem 0.5rem;
 }
 
-input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
-/*} */
+.invoice-page table th,
+.invoice-page table td {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.invoice-page button {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+}
 
 .input-clean {
   @apply w-full rounded px-2 text-gray-700 focus:outline-none focus:ring-0;
@@ -33,6 +49,16 @@ input[type="number"] {
 .input-clean[type="number"] {
   @apply appearance-none;
   border: none;
+}
+
+.input-clean {
+  @apply w-full rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-0;
+  border: none;
+}
+
+.input-clean:hover,
+textarea.input-clean:hover {
+  border: 1px dashed red;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -71,43 +97,6 @@ button.remove-btn {
   transition: opacity 0.2s;
 }
 
-
-
-
-/* Fondo gris de toda la pantalla */
-body {
-  background-color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
-}
-
-/* Contenedor tipo página */
-.invoice-page {
-  background-color: white;
-  width: 800px;          /* ancho fijo tipo página */
-  max-width: 90vw;       /* ajusta a pantalla pequeña */
-  padding: 2rem;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  border-radius: 6px;
-  font-size: 0.9rem;     /* ligeramente más pequeño */
-  line-height: 1.4;
-}
-
-/* Ajuste tabla y inputs dentro de la página */
-.invoice-page input.input-clean,
-.invoice-page textarea {
-  font-size: 0.875rem; /* 14px */
-  padding: 0.25rem 0.5rem;
-}
-
-.invoice-page table th,
-.invoice-page table td {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-}
-
-.invoice-page button {
-  font-size: 0.875rem;
-  padding: 0.25rem 0.5rem;
+.pr-6 {
+  padding-right: 1.5rem;
 }

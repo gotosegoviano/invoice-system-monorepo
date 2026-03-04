@@ -11,8 +11,6 @@ const emit = defineEmits<{
   (e: 'remove', id: string): void
 }>()
 
-// Modal y selección de service company
-const showModal = ref(false)
 const isServiceCompany = ref(false)
 const tooltipOpen = ref(false)
 
@@ -32,29 +30,6 @@ const subtotal = computed(() => {
 
 <template>
   <div>
-    <!-- Tooltip -->
-    <div
-      v-if="tooltipOpen"
-      class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white border rounded shadow-lg p-4 text-sm z-20"
-    >
-      <p class="mb-2 font-medium">Are you a service based company?</p>
-      <p class="mb-3">Switch to hours/rates:</p>
-      <div class="flex justify-end gap-3">
-        <button
-          class="px-3 py-1 border rounded text-gray-700"
-          @click="setServiceCompany(false); tooltipOpen = false"
-        >No</button>
-        <button
-          class="px-3 py-1 bg-blue-500 text-white rounded"
-          @click="setServiceCompany(true); tooltipOpen = false"
-        >Yes</button>
-      </div>
-      <button
-        class="absolute top-1 right-1 text-gray-400"
-        @click="tooltipOpen = false"
-      >✕</button>
-    </div>
-    
     <table class="w-full text-sm">
       <thead class="bg-black text-white">
         <tr>
@@ -69,6 +44,30 @@ const subtotal = computed(() => {
             >
               i
             </button>
+            <!-- Tooltip -->
+            <div
+              v-if="tooltipOpen"
+              class="absolute text-black top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white border rounded shadow-lg p-4 text-sm z-20"
+            >
+              <p class="mb-2 font-medium">Are you a service based company?</p>
+              <p class="mb-3 font-medium">Switch to hours/rates:</p>
+              <div class="flex justify-center gap-3">
+                <button
+                  class="py-1 rounded text-gray-700"
+                  @click="setServiceCompany(true);"
+                >Yes</button>
+                /
+                <button
+                  class="py-1 rounded text-gray-700"
+                  @click="setServiceCompany(false);"
+                >No</button>
+              </div>
+              <button
+                class="absolute top-1 right-1 text-gray-400"
+                @click="tooltipOpen = false"
+              >✕</button>
+            </div>
+
           </th>
           <th class="p-3 w-32">{{ isServiceCompany ? 'Rate' : 'Price' }}</th>
         </tr>
@@ -78,7 +77,7 @@ const subtotal = computed(() => {
         <tr v-for="(item, index) in items" :key="item.id" class="border-b relative group">
           <!-- ID -->
           <td class="p-3 text-gray-400">
-            <input type="text" v-model.number="item.itemId" class="input-clean w-20" :placeholder="String(index + 1).padStart(2, '0')" />
+            <input type="text" class="input-clean w-20" :placeholder="String(index + 1).padStart(2, '0')" />
           </td>
 
           <!-- Description -->
@@ -96,7 +95,7 @@ const subtotal = computed(() => {
             <input type="number" v-model.number="item.price" class="input-clean text-center w-28" />
             <button
               @click="emit('remove', item.id)"
-              class="text-red-500 remove-btn"
+              class="font-semibold remove-btn rounded-full border-2 w-6 h-6 "
             >
               ✕
             </button>

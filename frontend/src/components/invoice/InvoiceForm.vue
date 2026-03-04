@@ -123,7 +123,7 @@ function loadFile(file: File) {
           <div class="text-gray-500">
             <div class="flex items-center gap-1">
               <span class="w-28 font-medium">Invoice No:</span>
-              <input type="text" class="input-clean flex-1 text-right" v-model="invoice.invoiceId" />
+              <input type="text" class="input-clean flex-1 text-right" placeholder="####" />
             </div>
             <div class="flex items-center gap-1">
               <span class="w-28 font-medium">Invoice Date:</span>
@@ -149,15 +149,15 @@ function loadFile(file: File) {
       </div>
 
       <!-- NOTES + TOTALS -->
-      <div class="grid grid-cols-2 gap-10 mt-16">
-
-        <div class="border rounded-xl p-8 text-gray-500">
-          <p class="font-medium text-gray-700 mb-2">Notes</p>
+      <div class="grid grid-cols-2 gap-6 mt-16">
+        <div class="border rounded-xl p-4 text-gray-500">
+          <p class="font-medium text-gray-700 mb-2 text-center">Notes</p>
           <textarea
             v-model="invoice.notes"
-            class="w-full border rounded p-3"
+            placeholder="Any additional comments"
+            class="input-clean resize-none text-center"
             rows="4"
-          />
+          ></textarea>
         </div>
 
         <TotalsPanel
