@@ -18,9 +18,8 @@ class InvoiceController extends Controller
             'company.last_name' => 'required|string',
             'company.email' => 'required|email',
             'company.web_page_url' => 'required|url',
-            'company.phone' => 'required|string',
+            'company.phone' => 'required|digits:10',
             'customer.name' => 'required|string',
-            'customer.email' => 'required|email',
             'due_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -29,6 +28,11 @@ class InvoiceController extends Controller
             'items.*.tax_rate' => 'required|numeric|min:0',
             'items.*.type' => 'required|in:service,product',
         ]);
+
+        if ($request->hasFile('company.logo')) {
+            $path = $request->file('company.logo')->store('logos', 'public');
+            $validated['company']['logo_path'] = $path;
+        }
 
         $result = $invoice_service->create($validated);
 
