@@ -15,16 +15,28 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: mbstring, pdo_mysql, bcmath, gd, xml, zip
+          coverage: none
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run migrations
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
       - name: Run backend tests
         run: vendor/bin/phpunit --colors=never
@@ -37,7 +49,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
-      - name: Deploy Railway
+      - name: Deploy to Railway
         run: railway up --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -49,7 +61,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -57,7 +70,7 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-          
+
       - name: Install dependencies
         run: npm ci
 
@@ -71,8 +84,9 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: amondnet/vercel-action@v20
         with:
+          zeit-token: ${{ secrets.VERCEL_TOKEN }}      
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ''
+          vercel-org-id: ''                            
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: frontend
-          vercel-args: '--prod'
+          vercel-args: '--prod'                        

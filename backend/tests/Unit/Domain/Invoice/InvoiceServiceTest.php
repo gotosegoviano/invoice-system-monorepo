@@ -26,7 +26,6 @@ class InvoiceServiceTest extends TestCase
         $this->service = new InvoiceService($this->pdfMock);
     }
 
-    #[Test]
     public function it_creates_invoice_successfully_for_service_type()
     {
         $data = [
@@ -67,7 +66,6 @@ class InvoiceServiceTest extends TestCase
         $this->assertInstanceOf(Invoice::class, $result['invoice']);
     }
 
-    #[Test]
     public function it_throws_exception_if_items_are_empty()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -79,7 +77,6 @@ class InvoiceServiceTest extends TestCase
         ]);
     }
 
-    #[Test]
     public function it_throws_exception_if_item_structure_is_invalid()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -98,7 +95,6 @@ class InvoiceServiceTest extends TestCase
         ]);
     }
 
-    #[Test]
     public function it_throws_exception_when_mixing_item_types()
     {
         $this->expectException(\InvalidArgumentException::class);
