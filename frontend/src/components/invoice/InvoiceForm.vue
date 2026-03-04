@@ -160,7 +160,7 @@ async function createInvoice() {
     const data = await response.json()
 
     if (response.ok) {
-      pdfLink.value = `${window.location.origin}/${data.pdf_path}`
+      pdfLink.value = `${data.pdf_path}`
     } else {
       if (data.errors) {
         const firstError = Object.values(data.errors)[0] as string[]

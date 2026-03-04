@@ -15,9 +15,12 @@ class InvoicePdfService
         $pdf = Pdf::loadView('pdf.invoice', compact('invoice'))->output();
         Storage::disk('public')->put($fileName, $pdf);
 
-        $invoice->pdf_path = $fileName;
+        $pdf_path = url(Storage::url($fileName));
+
+        $invoice->pdf_path = $pdf_path;
+        ;
         $invoice->save();
 
-        return Storage::url($fileName);
+        return $pdf_path;
     }
 }
