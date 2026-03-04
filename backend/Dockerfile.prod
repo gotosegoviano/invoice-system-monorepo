@@ -1,30 +1,15 @@
-FROM php:8.4-fpm-alpine AS vendor
+FROM php:8.3-fpm-alpine
 
-RUN apk add --no-cache git unzip
-COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+RUN apk add --no-cache git unzip curl
 
-WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist
-COPY . .
-RUN composer dump-autoload --optimize
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd fileinfo
 
-
-FROM php:8.4-fpm-alpine
-
-RUN apk add --no-cache nginx bash curl libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev libxml2-dev zip unzip 
-
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd fileinfo opcache
-
-RUN sed -i "s|listen = .*|listen = 0.0.0.0:9000|g" /usr/local/etc/php-fpm.d/www.conf
-
-COPY --from=vendor /app /var/www/html
 WORKDIR /var/www/html
 
-RUN chmod -R 775 storage bootstrap/cache
-RUN chown -R www-data:www-data storage bootstrap/cache
+COPY . .
 
-COPY docker/nginx.conf.prod /etc/nginx/nginx.conf
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 775 storage bootstrap/cache
 
 RUN echo "upload_max_filesize=20M" >> /usr/local/etc/php/conf.d/uploads.ini
 RUN echo "post_max_size=20M" >> /usr/local/etc/php/conf.d/uploads.ini
@@ -34,4 +19,4 @@ RUN php artisan storage:link || true
 
 EXPOSE 8080
 
-CMD sh -c "sed -i 's/\${PORT}/'$PORT'/g' /etc/nginx/nginx.conf && php-fpm & nginx -g 'daemon off;'"
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
