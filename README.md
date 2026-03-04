@@ -8,7 +8,7 @@ Aplicación full-stack de gestión de facturas construida como monorepo, con cá
 
 | Capa | Tecnología |
 |------|-----------|
-| Backend | Laravel 10+ (PHP 8.x) |
+| Backend | Laravel 12 (PHP 8.x) |
 | Frontend | Vue 3 + TypeScript + Vite |
 | Base de datos | MySQL |
 | Infraestructura | Docker + Docker Compose |
@@ -168,9 +168,3 @@ Simplifica la ejecución local, unifica el versionado y reduce la fricción dura
 - Agregar filtros avanzados
 - Separar infraestructura en repositorio independiente
 - Implementar DDD más estricto con Application Layer + Use Cases
-
----
-
-## 📄 Licencia
-
-Este proyecto fue desarrollado como prueba técnica, demostrando arquitectura limpia, principios SOLID, testing real y manejo completo del ciclo de despliegue.
