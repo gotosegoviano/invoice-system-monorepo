@@ -4,7 +4,7 @@ namespace App\Domain\Invoices\Strategies;
 
 class ServiceCalculationStrategy implements CalculationStrategy
 {
-    public function calculate(float $tax_total = 0, float $discount = 0, array $items): array
+    public function calculate(array $items, float $tax_total = 0, float $discount = 0): array
     {
         $subtotal = 0;
 

@@ -2,11 +2,12 @@
 
 namespace Tests\Unit\Domain\Invoices\Services;
 
+use App\Domain\Invoices\Services\InvoicePdfService;
+use App\Domain\Invoices\Services\InvoiceService;
 use Tests\TestCase;
 use Mockery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Domain\Invoices\Services\InvoiceService;
-use App\Domain\Invoice\Services\InvoicePdfService;
+
 use App\Domain\Invoices\Enums\InvoiceType;
 use App\Models\Invoice;
 

@@ -82,7 +82,7 @@ class InvoiceService
     public function calculate(array $data, array $items): array
     {
         $strategy = $this->resolveStrategy(InvoiceType::from($data['type']));
-        return $strategy->calculate($data['tax_total'] ?? 0, $data['discount'] ?? 0, $items);
+        return $strategy->calculate($items, $data['tax_total'] ?? 0, $data['discount'] ?? 0);
     }
 
     private function resolveStrategy(InvoiceType $type): CalculationStrategy
