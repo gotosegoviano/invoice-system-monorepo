@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid');
 
             $table->foreignId('company_id')
                 ->constrained()

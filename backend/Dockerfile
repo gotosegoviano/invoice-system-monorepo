@@ -24,8 +24,11 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 
+RUN echo "upload_max_filesize=20M" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "post_max_size=20M" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "memory_limit=256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 RUN php artisan storage:link || true
-RUN php artisan migrate --force
 
 EXPOSE 8080
 

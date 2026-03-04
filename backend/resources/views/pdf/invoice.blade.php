@@ -187,7 +187,7 @@
         {{-- LOGO --}}
         @php
             $logoPath = null;
-            if ($invoice->company->logo) {
+            if ($invoice->company->logo_path) {
                 $path = storage_path('app/public/' . $invoice->company->logo_path);
                 if (file_exists($path))
                     $logoPath = $path;
