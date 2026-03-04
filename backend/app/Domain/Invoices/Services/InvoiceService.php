@@ -32,22 +32,16 @@ class InvoiceService
             throw new InvalidArgumentException('Invoice must contain at least one item.');
         }
 
-        $this->validateItemsStructure($items);
-
-        // Check if all items are of the same type
-        $types = array_unique(array_column($items, 'type'));
-        if (count($types) > 1) {
-            throw new InvalidArgumentException('Cannot mix product and service items.');
-        }
+        //$this->validateItemsStructure($items);
 
         // It doesn't matter if the company and customer already exist, we will just create new ones for simplicity. In a real application, you would likely want to check for existing records and reuse them.
         $company = Company::create($data['company']);
         $customer = Customer::create($data['customer']);
 
-        $type = InvoiceType::from($types[0]);
+        $type = InvoiceType::from($data['type']);
 
         // Calculate totals using the appropriate strategy
-        $totals = $this->calculate($type, $items);
+        $totals = $this->calculate($data, $items);
 
         return DB::transaction(function () use ($data, $items, $totals, $company, $customer, $type) {
 
@@ -72,7 +66,7 @@ class InvoiceService
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'discount' => $item['discount'] ?? 0,
-                    'tax_rate' => $item['tax_rate'],
+                    'tax_rate' => $data['tax_total'] ?? 0,
                 ]);
             }
 
@@ -85,10 +79,10 @@ class InvoiceService
         });
     }
 
-    public function calculate(InvoiceType $type, array $items): array
+    public function calculate(array $data, array $items): array
     {
-        $strategy = $this->resolveStrategy($type);
-        return $strategy->calculate($items);
+        $strategy = $this->resolveStrategy(InvoiceType::from($data['type']));
+        return $strategy->calculate($data['tax_total'] ?? 0, $data['discount'] ?? 0, $items);
     }
 
     private function resolveStrategy(InvoiceType $type): CalculationStrategy
@@ -102,7 +96,7 @@ class InvoiceService
     private function validateItemsStructure(array $items): void
     {
         foreach ($items as $item) {
-            if (!isset($item['quantity'], $item['price'], $item['tax_rate'], $item['type'])) {
+            if (!isset($item['quantity'], $item['price'], $item['type'])) {
                 throw new InvalidArgumentException('Invalid item structure.');
             }
         }

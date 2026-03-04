@@ -162,17 +162,17 @@
                 <div class="invoice-title">Invoice</div>
 
                 <div class="company-block">
-                    <div class="section-title">Your Company</div>
+                    <div class="section-title">{{ $invoice->company->name }}</div>
                     <div class="muted">
-                        {{ $invoice->company->name }}<br>
                         {{ $invoice->company->email }}
                     </div>
                 </div>
 
                 <div class="client-block">
-                    <div class="section-title">Client's Company</div>
+                    <div class="section-title">
+                    {{ $invoice->customer->name }}
+                    </div>
                     <div class="muted">
-                        {{ $invoice->customer->name }}<br>
                         {{ $invoice->customer->email }}
                     </div>
                 </div>

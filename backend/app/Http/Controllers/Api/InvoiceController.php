@@ -25,8 +25,10 @@ class InvoiceController extends Controller
             'items.*.description' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.price' => 'required|numeric|min:0',
-            'items.*.tax_rate' => 'required|numeric|min:0',
-            'items.*.type' => 'required|in:service,product',
+            'type' => 'required|in:service,product',
+            'tax_total' => 'required|numeric|min:0',
+            'discount_total' => 'required|numeric|min:0',
+            'total' => 'required|numeric|min:0',
         ]);
 
         if ($request->hasFile('company.logo')) {
