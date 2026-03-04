@@ -14,7 +14,7 @@ FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache nginx bash curl libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev libxml2-dev zip unzip 
 
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd fileinfo opcache
 
 RUN sed -i "s|listen = .*|listen = 9000|g" /usr/local/etc/php-fpm.d/www.conf
 
@@ -25,6 +25,12 @@ RUN chmod -R 775 storage bootstrap/cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 COPY docker/nginx.conf.prod /etc/nginx/nginx.conf
+
+RUN echo "upload_max_filesize=20M" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "post_max_size=20M" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN echo "memory_limit=256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
+RUN php artisan storage:link || true
 
 EXPOSE 8080
 
