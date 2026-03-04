@@ -35,7 +35,5 @@ RUN echo "memory_limit=256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 RUN php artisan storage:link || true
 
-EXPOSE 8080
-
 #CMD php artisan serve --host=0.0.0.0 --port=$PORT
 CMD sh -c "echo PORT=$PORT && php artisan serve --host=0.0.0.0 --port=$PORT"
