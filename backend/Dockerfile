@@ -13,7 +13,7 @@ RUN composer dump-autoload --optimize
 
 FROM php:8.4-fpm-alpine
 
-RUN apk add --no-cache nginx bash curl libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev libxml2-dev zip unzip gettext-base
+RUN apk add --no-cache nginx bash curl libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev libxml2-dev zip unzip 
 
 RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
@@ -26,4 +26,4 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 8080
 
-CMD sh -c "envsubst '\$PORT' < /etc/nginx/conf.d/default.conf > /etc/nginx/conf.d/default.conf.tmp && mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf && php-fpm -D && nginx -g 'daemon off;'"
+CMD sh -c "php-fpm -D && nginx -g 'daemon off;'"
