@@ -133,7 +133,6 @@
 </head>
 
 <body>
-
     {{-- ================= HEADER ================= --}}
     <div class="left">
 
@@ -144,11 +143,28 @@
             <div class="block-title">{{ $invoice->company->name }}</div>
             <div class="muted">
                 {{ $invoice->company->first_name }} {{ $invoice->company->last_name }}<br>
-                {{ $invoice->company->address }}<br>
-                {{ $invoice->company->city }}, {{ $invoice->company->state }} {{ $invoice->company->zip }}<br>
-                {{ $invoice->company->country }}<br>
-                {{ $invoice->company->phone }}<br>
-                {{ $invoice->company->email }}
+
+                @if($invoice->company->address)
+                    {{ $invoice->company->address }}<br>
+                @endif
+
+                @if($invoice->company->city || $invoice->company->state || $invoice->company->zip)
+                    {{ $invoice->company->city }}
+                    {{ $invoice->company->state }}
+                    {{ $invoice->company->zip }}<br>
+                @endif
+
+                @if($invoice->company->country)
+                    {{ $invoice->company->country }}<br>
+                @endif
+
+                @if($invoice->company->phone)
+                    {{ $invoice->company->phone }}<br>
+                @endif
+
+                @if($invoice->company->email)
+                    {{ $invoice->company->email }}
+                @endif
             </div>
         </div>
 
@@ -172,7 +188,7 @@
         @php
             $logoPath = null;
             if ($invoice->company->logo) {
-                $path = storage_path('app/public/' . $invoice->company->logo);
+                $path = storage_path('app/public/' . $invoice->company->logo_path);
                 if (file_exists($path))
                     $logoPath = $path;
             }
