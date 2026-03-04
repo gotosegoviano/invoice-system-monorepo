@@ -46,11 +46,21 @@ function loadFile(file: File) {
 // Convert DataURL to Blob
 function dataURLtoBlob(dataurl: string) {
   const arr = dataurl.split(',')
-  const mime = arr[0].match(/:(.*?);/)![1]
-  const bstr = atob(arr[1])
-  let n = bstr.length
+  if (arr.length < 2) {
+    throw new Error('Invalid data URL')
+  }
+
+  const mimeMatch = arr[0]?.match(/:(.*?);/)
+  const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream'
+
+  const bstr = atob(arr[1] ?? '')
+  const n = bstr.length
   const u8arr = new Uint8Array(n)
-  while (n--) u8arr[n] = bstr.charCodeAt(n)
+
+  for (let i = 0; i < n; i++) {
+    u8arr[i] = bstr.charCodeAt(i)
+  }
+
   return new Blob([u8arr], { type: mime })
 }
 
@@ -104,7 +114,7 @@ async function createInvoice() {
     // --- Company fields ---
     Object.entries(invoice.value.company).forEach(([key, value]) => {
       if (key === 'logo_path') return
-      formData.append(`company[${key}]`, value)
+      formData.append(`company[${key}]`, (value ?? '') as string)
     })
 
     // --- Add logo as Blob if exists ---
@@ -118,19 +128,19 @@ async function createInvoice() {
 
     // --- Customer fields ---
     Object.entries(invoice.value.customer).forEach(([key, value]) => {
-      formData.append(`customer[${key}]`, value)
+      formData.append(`customer[${key}]`, (value ?? '') as string)
     })
 
     // --- Items ---
     invoice.value.items.forEach((item, i) => {
       Object.entries(item).forEach(([key, value]) => {
-        formData.append(`items[${i}][${key}]`, String(value))
+        formData.append(`items[${i}][${key}]`, String(value ?? ''))
       })
     })
 
     // --- Dates ---
-    formData.append('issue_date', issueDate.value.toISOString().split('T')[0])
-    formData.append('due_date', dueDate.value.toISOString().split('T')[0])
+    formData.append('issue_date', (issueDate.value?.toISOString().split('T')[0] ?? ''))
+    formData.append('due_date', (dueDate.value?.toISOString().split('T')[0] ?? ''))
 
     // Tax, discount, total
     formData.append('tax_total', String(taxAmount.value))
@@ -154,7 +164,7 @@ async function createInvoice() {
     } else {
       if (data.errors) {
         const firstError = Object.values(data.errors)[0] as string[]
-        errorMessage.value = firstError[0]
+        errorMessage.value = firstError[0] ?? 'Unknown error creating invoice'
       } else if (data.message) {
         errorMessage.value = data.message
       } else {
