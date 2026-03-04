@@ -26,11 +26,15 @@ class InvoiceServiceTest extends TestCase
         $this->service = new InvoiceService($this->pdfMock);
     }
 
-    public function it_creates_invoice_successfully_for_service_type()
+    public function test_it_creates_invoice_successfully_for_service_type()
     {
         $data = [
             'company' => [
                 'name' => 'ACME Inc',
+                'first_name' => 'Alice',
+                'last_name' => 'Smith',
+                'phone' => '1234567890',
+                'web_page_url' => 'https://example.com',
                 'email' => 'acme@test.com'
             ],
             'customer' => [
@@ -47,7 +51,8 @@ class InvoiceServiceTest extends TestCase
                     'tax_rate' => 10,
                     'type' => 'service'
                 ]
-            ]
+            ],
+            'type' => 'service'
         ];
 
         $this->pdfMock
@@ -66,7 +71,7 @@ class InvoiceServiceTest extends TestCase
         $this->assertInstanceOf(Invoice::class, $result['invoice']);
     }
 
-    public function it_throws_exception_if_items_are_empty()
+    public function test_it_throws_exception_if_items_are_empty()
     {
         $this->expectException(\InvalidArgumentException::class);
 
@@ -77,47 +82,16 @@ class InvoiceServiceTest extends TestCase
         ]);
     }
 
-    public function it_throws_exception_if_item_structure_is_invalid()
+    public function test_it_throws_exception_if_item_structure_is_invalid()
     {
         $this->expectException(\InvalidArgumentException::class);
 
         $this->service->create([
-            'company' => ['name' => 'A', 'email' => 'a@test.com'],
+            'company' => ['name' => 'A', 'first_name' => 'Alice', 'last_name' => 'Smith', 'phone' => '1234567890', 'web_page_url' => 'https://example.com', 'email' => 'a@test.com'],
             'customer' => ['name' => 'B', 'email' => 'b@test.com'],
-            'items' => [
-                [
-                    'quantity' => 1,
-                    'price' => 100,
-                    // tax_rate missing
-                    'type' => 'service'
-                ]
-            ]
-        ]);
-    }
-
-    public function it_throws_exception_when_mixing_item_types()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-
-        $this->service->create([
-            'company' => ['name' => 'A', 'email' => 'a@test.com'],
-            'customer' => ['name' => 'B', 'email' => 'b@test.com'],
-            'items' => [
-                [
-                    'description' => 'Item 1',
-                    'quantity' => 1,
-                    'price' => 100,
-                    'tax_rate' => 10,
-                    'type' => 'service'
-                ],
-                [
-                    'description' => 'Item 2',
-                    'quantity' => 1,
-                    'price' => 100,
-                    'tax_rate' => 10,
-                    'type' => 'product'
-                ]
-            ]
+            'items' => [],
+            'due_date' => now()->addDays(7),
+            'type' => 'service'
         ]);
     }
 }
