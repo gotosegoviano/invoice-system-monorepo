@@ -1,8 +1,25 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.3-cli-alpine
 
-RUN apk add --no-cache git unzip curl
+RUN apk add --no-cache \
+    git \
+    unzip \
+    curl \
+    oniguruma-dev \
+    libxml2-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    $PHPIZE_DEPS
 
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd fileinfo
+RUN docker-php-ext-install \
+    pdo \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    fileinfo
 
 WORKDIR /var/www/html
 
