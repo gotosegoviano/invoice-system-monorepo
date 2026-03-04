@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   subtotal: number
+  taxAmount: number
+  discountAmount: number
   total: number
 }>()
 
+const emit = defineEmits<{
+  (e: 'update:taxAmount', value: number): void
+  (e: 'update:discountAmount', value: number): void
+}>()
+
+// Local reactive refs
+const localTax = ref(props.taxAmount)
+const localDiscount = ref(props.discountAmount)
 const taxType = ref<'$' | '%'>('%')
 const discountType = ref<'$' | '%'>('%')
+
+// Sync props changes from parent
+watch(() => props.taxAmount, val => localTax.value = val)
+watch(() => props.discountAmount, val => localDiscount.value = val)
 </script>
 
 <template>
@@ -15,7 +29,7 @@ const discountType = ref<'$' | '%'>('%')
     <!-- Subtotal -->
     <div class="flex justify-between">
       <span>Subtotal:</span>
-      <span class="pr-6 font-semibold">{{ subtotal.toFixed(2) }}</span>
+      <span class="pr-6 font-semibold">{{ props.subtotal.toFixed(2) }}</span>
     </div>
 
     <!-- Tax -->
@@ -26,11 +40,17 @@ const discountType = ref<'$' | '%'>('%')
           v-if="taxType === '$'" 
           @click="taxType = '%'" 
           class="absolute left-0 pl-2 text-gray-700 cursor-pointer font-semibold"
-          >
+        >
           $
         </button>
 
-        <input type="number" placeholder="0" class="input-clean w-full text-right pl-6 pr-6 font-semibold"/>
+        <input 
+          type="number" 
+          v-model.number="localTax" 
+          @input="emit('update:taxAmount', localTax)" 
+          placeholder="0" 
+          class="input-clean w-full text-right pl-6 pr-6 font-semibold"
+        />
 
         <button
           v-if="taxType === '%'" 
@@ -52,7 +72,13 @@ const discountType = ref<'$' | '%'>('%')
           class="absolute left-0 pl-2 text-gray-700 cursor-pointer font-semibold"
         >$</button>
 
-        <input type="number" placeholder="0" class="input-clean w-full text-right pl-6 pr-6 font-semibold"/>
+        <input 
+          type="number" 
+          v-model.number="localDiscount" 
+          @input="emit('update:discountAmount', localDiscount)" 
+          placeholder="0" 
+          class="input-clean w-full text-right pl-6 pr-6 font-semibold"
+        />
 
         <button
           v-if="discountType === '%'"
@@ -65,7 +91,13 @@ const discountType = ref<'$' | '%'>('%')
     <!-- Total -->
     <div class="border-t pt-4 flex justify-between font-semibold">
       <span>Total:</span>
-      <span class="pr-6">{{ total.toFixed(2) }}</span>
+      <span class="pr-6">{{ props.total.toFixed(2) }}</span>
     </div>
   </div>
 </template>
+
+<style scoped>
+.input-clean {
+  @apply border border-gray-300 rounded px-3 py-2 w-full;
+}
+</style>

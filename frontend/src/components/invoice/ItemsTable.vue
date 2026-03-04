@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { InvoiceItem } from '@/types/invoice'
+
+const isServiceCompany = ref(false)
+const tooltipOpen = ref(false)
 
 const props = defineProps<{
   items: InvoiceItem[]
@@ -11,21 +14,17 @@ const emit = defineEmits<{
   (e: 'remove', id: string): void
 }>()
 
-const isServiceCompany = ref(false)
-const tooltipOpen = ref(false)
 
 function setServiceCompany(value: boolean) {
   isServiceCompany.value = value
 }
 
-// Cálculo de subtotal dinámico
 const subtotal = computed(() => {
   return props.items.reduce((acc, item) => {
-    const qty = item.quantity
-    const prc = item.price
-    return acc + qty * prc
+    return acc + item.quantity * item.price
   }, 0)
 })
+
 </script>
 
 <template>

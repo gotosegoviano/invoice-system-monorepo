@@ -51,11 +51,6 @@ body {
   border: none;
 }
 
-.input-clean {
-  @apply w-full rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-0;
-  border: none;
-}
-
 .input-clean:hover,
 textarea.input-clean:hover {
   border: 1px dashed red;
@@ -98,5 +93,5 @@ button.remove-btn {
 }
 
 .pr-6 {
-  padding-right: 1.5rem;
+  padding-right: 1.5rem !important;
 }

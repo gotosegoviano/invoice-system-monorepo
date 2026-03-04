@@ -14,10 +14,13 @@ export interface InvoiceState {
   issueDate: string;
   dueDate: string;
   notes: string;
+  type: string;
 }
 
 export interface InvoiceTotals {
   subtotal: number;
+  taxAmount: number;
+  discountAmount: number;
   total: number;
 }
 
@@ -37,7 +40,7 @@ export interface Company {
 }
 
 export interface Customer {
-  company_name?: string;
+  name?: string;
   first_name?: string;
   last_name?: string;
   address?: string;

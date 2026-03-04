@@ -18,7 +18,7 @@ export function useInvoice() {
       logo_path: "",
     },
     customer: {
-      company_name: "",
+      name: "",
       first_name: "",
       last_name: "",
       address: "",
@@ -33,6 +33,7 @@ export function useInvoice() {
     issueDate: new Date().toISOString().slice(0, 10),
     dueDate: "",
     notes: "",
+    type: "product",
   });
 
   function addItem() {
