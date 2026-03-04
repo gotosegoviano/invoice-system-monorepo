@@ -49,10 +49,17 @@ class InvoiceServiceTest extends TestCase
                     'price' => 100,
                     'discount' => 10,
                     'tax_rate' => 10,
-                    'type' => 'service'
+                    'type' => 'service',
+                    'discount_is_percentage' => false,
+                    'tax_is_percentage' => true
                 ]
             ],
-            'type' => 'service'
+            'type' => 'service',
+            'tax_total' => 10,
+            'tax_type' => '%',
+            'discount_total' => 10,
+            'discount_type' => '$',
+            'total' => 198
         ];
 
         $this->pdfMock
@@ -69,6 +76,18 @@ class InvoiceServiceTest extends TestCase
 
         $this->assertEquals('/storage/invoices/test.pdf', $result['pdf_url']);
         $this->assertInstanceOf(Invoice::class, $result['invoice']);
+
+        $invoice_item = $result['invoice']->items->first();
+        $subtotal = 2 * 100; // 200
+        $discount = 10;
+        $tax = ($subtotal - $discount) * 0.10; // 18
+        $total = ($subtotal - $discount) + $tax; // 198
+
+        //dd($result['invoice']->toArray(), $subtotal, $discount, $tax, $total);
+        $this->assertEquals($subtotal, $result['invoice']->subtotal);
+        $this->assertEquals($discount, $result['invoice']->discount_total);
+        $this->assertEquals($tax, $result['invoice']->tax_total);
+        $this->assertEquals($total, $result['invoice']->total);
     }
 
     public function test_it_throws_exception_if_items_are_empty()
