@@ -5,7 +5,7 @@ import ItemsTable from './ItemsTable.vue'
 import TotalsPanel from './TotalsPanel.vue'
 import Datepicker from "vue3-datepicker";
 
-const issueDate = ref(new Date());
+const invoiceDate = ref(new Date());
 const dueDate = ref(new Date());
 const pdfLink = ref('')
 const loading = ref(false)
@@ -139,7 +139,7 @@ async function createInvoice() {
     })
 
     // --- Dates ---
-    formData.append('issue_date', (issueDate.value?.toISOString().split('T')[0] ?? ''))
+    formData.append('issue_date', (invoiceDate.value?.toISOString().split('T')[0] ?? ''))
     formData.append('due_date', (dueDate.value?.toISOString().split('T')[0] ?? ''))
 
     // Tax, discount, total
@@ -282,7 +282,7 @@ async function createInvoice() {
             <div class="flex items-center gap-1">
               <span class="w-28 font-medium">Invoice Date:</span>
               <Datepicker 
-                v-model="issueDate" 
+                v-model="invoiceDate" 
                 input-class="input-clean flex-1 datepicker-input-right"
               />
             </div>

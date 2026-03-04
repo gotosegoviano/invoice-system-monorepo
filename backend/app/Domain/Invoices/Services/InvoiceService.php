@@ -46,7 +46,7 @@ class InvoiceService
         return DB::transaction(function () use ($data, $items, $totals, $company, $customer, $type) {
 
             $invoice = Invoice::create([
-                'uuid' => Str::uuid(),
+                'uuid' => $data['invoice_number'] ?? Str::uuid(),
                 'type' => $type->value,
                 'invoice_date' => $data['invoice_date'] ?? now(),
                 'due_date' => $data['due_date'],

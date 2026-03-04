@@ -30,7 +30,7 @@ export function useInvoice() {
     },
     items: [],
     invoiceId: 0,
-    issueDate: new Date().toISOString().slice(0, 10),
+    invoiceDate: new Date().toISOString().slice(0, 10),
     dueDate: "",
     notes: "",
     type: "product",
