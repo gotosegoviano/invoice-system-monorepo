@@ -29,13 +29,18 @@ jobs:
       - name: Run backend tests
         run: php artisan test --parallel
 
-      - name: Deploy to Railway
-        if: github.ref == 'refs/heads/main'
-        uses: railwayapp/cli-action@v1
-        with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          project: invoice-system-monorepo
-          branch: main
+      - name: Install Railway CLI
+        run: curl -sSL https://railway.app/install.sh | sh
+
+      - name: Login Railway
+        run: railway login --ci
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy Railway
+        run: railway up --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
   frontend:
     name: Frontend Vue
@@ -57,9 +62,11 @@ jobs:
 
       - name: Run type-check
         run: npm run type-check
+        working-directory: frontend
 
       - name: Run build
         run: npm run build
+        working-directory: frontend
 
       - name: Deploy to Vercel
         if: github.ref == 'refs/heads/main'
