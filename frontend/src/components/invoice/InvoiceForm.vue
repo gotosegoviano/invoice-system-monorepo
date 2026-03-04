@@ -14,6 +14,7 @@ const taxAmount = ref(0)
 const discountAmount = ref(0)
 const taxType = ref<'$' | '%'>('%')
 const discountType = ref<'$' | '%'>('%')
+const invoiceNumber = ref(0)
 
 const { invoice, addItem, removeItem, subtotal } = useInvoice()
 
@@ -139,9 +140,10 @@ async function createInvoice() {
     })
 
     // --- Dates ---
-    formData.append('issue_date', (invoiceDate.value?.toISOString().split('T')[0] ?? ''))
+    formData.append('invoice_date', (invoiceDate.value?.toISOString().split('T')[0] ?? ''))
     formData.append('due_date', (dueDate.value?.toISOString().split('T')[0] ?? ''))
-
+    formData.append('invoice_number', (invoiceNumber.value ?? 0).toString())
+    
     // Tax, discount, total
     formData.append('tax_total', String(taxAmount.value))
     formData.append('discount_total', String(discountAmount.value))
@@ -277,7 +279,7 @@ async function createInvoice() {
           <div class="text-gray-500">
             <div class="flex items-center gap-1">
               <span class="w-28 font-medium">Invoice No:</span>
-              <input type="text" class="input-clean flex-1 text-right pr-6" placeholder="####" />
+              <input type="text" v-model="invoiceNumber" class="input-clean flex-1 text-right pr-6" placeholder="####" />
             </div>
             <div class="flex items-center gap-1">
               <span class="w-28 font-medium">Invoice Date:</span>

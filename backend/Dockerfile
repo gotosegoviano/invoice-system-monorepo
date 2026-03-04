@@ -24,6 +24,9 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 
+RUN php artisan storage:link || true
+RUN php artisan migrate --force
+
 EXPOSE 8080
 
 CMD sh -c "php-fpm -D && nginx -g 'daemon off;'"

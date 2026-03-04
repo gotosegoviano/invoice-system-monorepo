@@ -10,7 +10,7 @@ export interface InvoiceState {
   company: Company;
   customer: Customer;
   items: InvoiceItem[];
-  invoiceId: number;
+  invoiceNumber: number;
   invoiceDate: string;
   dueDate: string;
   notes: string;

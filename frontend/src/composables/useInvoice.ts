@@ -29,7 +29,7 @@ export function useInvoice() {
       email: "",
     },
     items: [],
-    invoiceId: 0,
+    invoiceNumber: 0,
     invoiceDate: new Date().toISOString().slice(0, 10),
     dueDate: "",
     notes: "",
