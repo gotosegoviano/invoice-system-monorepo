@@ -1,72 +1,37 @@
 <script setup lang="ts">
 import { ref, computed } from "vue"
 import { useInvoice } from '@/composables/useInvoice'
+import { useFileUpload } from '@/composables/useFileUpload'
+import { useInvoiceValidation } from '@/composables/useInvoiceValidation'
+import { useInvoiceApi } from '@/composables/useInvoiceApi'
 import ItemsTable from './ItemsTable.vue'
 import TotalsPanel from './TotalsPanel.vue'
 import Datepicker from "vue3-datepicker";
 
+const { invoice, addItem, removeItem, subtotal } = useInvoice()
+const { onFileChange, onDrop, onClickSelect } = useFileUpload()
+
 const invoiceDate = ref(new Date());
 const dueDate = ref(new Date());
-const pdfLink = ref('')
-const loading = ref(false)
-const errorMessage = ref('')
 const taxAmount = ref(0)
 const discountAmount = ref(0)
 const taxType = ref<'$' | '%'>('%')
 const discountType = ref<'$' | '%'>('%')
 const invoiceNumber = ref(0)
-
 const today = new Date()
 const minDate = today
 
-
-const { invoice, addItem, removeItem, subtotal } = useInvoice()
-
-// Ref for the hidden file input
-const fileInput = ref<HTMLInputElement>()
-
-// Drag & drop + file select handlers
-function onFileChange(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) loadFile(file)
+// handlers para logo upload
+function handleFileSelect(e: Event) {
+  onFileChange(e, (dataUrl) => {
+    invoice.value.company.logo_path = dataUrl;
+  });
 }
 
-function onClickSelect() {
-  fileInput.value?.click()
-}
-
-function onDrop(event: DragEvent) {
-  const file = event.dataTransfer?.files?.[0]
-  if (file) loadFile(file)
-}
-
-function loadFile(file: File) {
-  const reader = new FileReader()
-  reader.onload = () => {
-    invoice.value.company.logo_path = reader.result as string
-  }
-  reader.readAsDataURL(file)
-}
-
-// Convert DataURL to Blob
-function dataURLtoBlob(dataurl: string) {
-  const arr = dataurl.split(',')
-  if (arr.length < 2) {
-    throw new Error('Invalid data URL')
-  }
-
-  const mimeMatch = arr[0]?.match(/:(.*?);/)
-  const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream'
-
-  const bstr = atob(arr[1] ?? '')
-  const n = bstr.length
-  const u8arr = new Uint8Array(n)
-
-  for (let i = 0; i < n; i++) {
-    u8arr[i] = bstr.charCodeAt(i)
-  }
-
-  return new Blob([u8arr], { type: mime })
+function handleDrop(e: DragEvent) {
+  onDrop(e, (dataUrl) => {
+    invoice.value.company.logo_path = dataUrl;
+  });
 }
 
 const total = computed(() => {
@@ -100,110 +65,17 @@ const total = computed(() => {
   return value
 })
 
-// Phone Number Validation (10 digits, no formatting)
-function isValidPhone(phone: string) {
-  const regex = /^\d{10}$/
-  return regex.test(phone)
-}
-
-// Validate form before creating invoice
-const canCreateInvoice = computed(() => {
-  if (!invoice.value.company.name) { errorMessage.value = 'Company Name is required.'; return false }
-  if (!invoice.value.company.email) { errorMessage.value = 'Company Email is required.'; return false }
-  if (!invoice.value.company.phone) { errorMessage.value = 'Company Phone is required.'; return false }
-  if (!isValidPhone(invoice.value.company.phone)) { errorMessage.value = 'Please enter a valid Company Phone (10 digits).'; return false }
-
-  if (!invoice.value.customer.name) { errorMessage.value = "Client's Company Name is required."; return false }
-
-  if (invoice.value.items.length === 0) { errorMessage.value = 'At least one item is required.'; return false }
-  const allItemsValid = invoice.value.items.every(item => item.description && item.quantity > 0 && item.price > 0)
-  if (!allItemsValid) { errorMessage.value = 'All items must have a description, quantity, and price greater than 0.'; return false }
-
-  errorMessage.value = ''
-  return true
-})
-
-// Create Invoice Handler
-async function createInvoice() {
-  if (!canCreateInvoice.value) return
-
-  loading.value = true
-  errorMessage.value = ''
-
-  try {
-    const formData = new FormData()
-
-    // --- Company fields ---
-    Object.entries(invoice.value.company).forEach(([key, value]) => {
-      if (key === 'logo_path') return
-      formData.append(`company[${key}]`, (value ?? '') as string)
-    })
-
-    // --- Add logo as Blob if exists ---
-    if (invoice.value.company.logo_path) {
-      formData.append(
-        'company[logo]',
-        dataURLtoBlob(invoice.value.company.logo_path),
-        'logo.png'
-      )
-    }
-
-    // --- Customer fields ---
-    Object.entries(invoice.value.customer).forEach(([key, value]) => {
-      formData.append(`customer[${key}]`, (value ?? '') as string)
-    })
-
-    // --- Items ---
-    invoice.value.items.forEach((item, i) => {
-      Object.entries(item).forEach(([key, value]) => {
-        formData.append(`items[${i}][${key}]`, String(value ?? ''))
-      })
-    })
-
-    // --- Dates ---
-    formData.append('invoice_date', (invoiceDate.value?.toISOString().split('T')[0] ?? ''))
-    formData.append('due_date', (dueDate.value?.toISOString().split('T')[0] ?? ''))
-    formData.append('invoice_number', (invoiceNumber.value ?? 0).toString())
-    
-    // Tax, discount, total
-    formData.append('tax_total', String(taxAmount.value))
-    formData.append('discount_total', String(discountAmount.value))
-    formData.append('total', String(total.value))
-    formData.append('type', invoice.value.type)
-    formData.append('comments', invoice.value.notes ?? '')
-    formData.append('tax_type', taxType.value ?? '')
-    formData.append('discount_type', discountType.value ?? '')
-
-    // --- Fetch al backend ---
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/invoices`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-      },
-      body: formData,
-    })
-
-    const data = await response.json()
-
-    if (response.ok) {
-      pdfLink.value = `${data.pdf_path}`
-    } else {
-      if (data.errors) {
-        const firstError = Object.values(data.errors)[0] as string[]
-        errorMessage.value = firstError[0] ?? 'Unknown error creating invoice'
-      } else if (data.message) {
-        errorMessage.value = data.message
-      } else {
-        errorMessage.value = 'Error creating invoice'
-      }
-    }
-  } catch (error) {
-    console.error(error)
-    errorMessage.value = 'Error connecting to server'
-  } finally {
-    loading.value = false
-  }
-}
+const { createInvoice, loading, errorMessage, pdfLink } = useInvoiceApi(
+  invoice,
+  invoiceNumber,
+  invoiceDate,
+  dueDate,
+  taxAmount,
+  discountAmount,
+  total, 
+  taxType,
+  discountType
+);
 </script>
 
 <template>
@@ -268,7 +140,7 @@ async function createInvoice() {
             class="border-2 border-dashed border-orange-400 p-10 text-center w-72 text-gray-500 cursor-pointer"
             @dragover.prevent
             @dragenter.prevent
-            @drop.prevent="onDrop"
+            @drop.prevent="handleDrop"
             @click="onClickSelect"
           >
             <div v-if="invoice.company.logo_path">
@@ -283,7 +155,7 @@ async function createInvoice() {
               type="file"
               ref="fileInput"
               class="hidden"
-              @change="onFileChange"
+              @change="handleFileSelect"
               accept="image/*"
             />
           </div>
@@ -312,6 +184,7 @@ async function createInvoice() {
                 input-class="input-clean flex-1 datepicker-input-right"
                 :lowerLimit="minDate"
                 :upperLimit="dueDate"
+                inputFormat="MM/dd/yyyy"
               />
             </div>
             <div class="flex items-center gap-1">
@@ -320,6 +193,7 @@ async function createInvoice() {
                 v-model="dueDate" 
                 input-class="input-clean flex-1 datepicker-input-right" 
                 :lowerLimit="minDate"
+                inputFormat="MM/dd/yyyy"
               />
             </div>
           </div>
@@ -374,7 +248,7 @@ async function createInvoice() {
       v-if="pdfLink"
       :href="pdfLink"
       target="_blank"
-      class="text-blue-600 underline mt-1"
+      class="text-white-600 underline mt-1 hover:text-green-700 bg-green-100 px-3 py-1 rounded"
     >
       Open PDF
     </a>

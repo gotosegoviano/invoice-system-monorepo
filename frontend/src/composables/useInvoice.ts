@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, watchEffect } from "vue";
 import type { InvoiceItem, InvoiceState } from "@/types/invoice";
 
 export function useInvoice() {
@@ -34,6 +34,18 @@ export function useInvoice() {
     dueDate: "",
     notes: "",
     type: "product",
+  });
+
+  // ---------- Get invoice from localStorage ----------
+  const savedInvoice = localStorage.getItem("invoice");
+  if (savedInvoice) {
+    const parsed = JSON.parse(savedInvoice);
+    invoice.value = parsed;
+  }
+
+  // Save to localStorage whenever invoice changes
+  watchEffect(() => {
+    localStorage.setItem("invoice", JSON.stringify(invoice.value));
   });
 
   function addItem() {
