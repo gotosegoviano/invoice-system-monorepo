@@ -16,6 +16,10 @@ const taxType = ref<'$' | '%'>('%')
 const discountType = ref<'$' | '%'>('%')
 const invoiceNumber = ref(0)
 
+const today = new Date()
+const minDate = today
+
+
 const { invoice, addItem, removeItem, subtotal } = useInvoice()
 
 // Ref for the hidden file input
@@ -306,6 +310,8 @@ async function createInvoice() {
               <Datepicker 
                 v-model="invoiceDate" 
                 input-class="input-clean flex-1 datepicker-input-right"
+                :lowerLimit="minDate"
+                :upperLimit="dueDate"
               />
             </div>
             <div class="flex items-center gap-1">
@@ -313,6 +319,7 @@ async function createInvoice() {
               <Datepicker 
                 v-model="dueDate" 
                 input-class="input-clean flex-1 datepicker-input-right" 
+                :lowerLimit="minDate"
               />
             </div>
           </div>
